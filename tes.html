@@ -53,44 +53,36 @@
       $("#submit-btn").click((e) => {
         e.preventDefault();
         let val = $("#text-input").val();
-        fetch(val)
-          .then((res) => res.blob()) // Gets the response and returns it as a blob
-          .then((blob) => {
-            var myHeaders = new Headers();
-            myHeaders.append(
-              "Authorization",
-              "sk-C9GszBkcUzNVTBKYjIfZDUhuCntdIgLOLK1SUNgrn5dEVao5"
+        let myHeaders = new Headers();
+        myHeaders.append("Authorization", "#############");
+        myHeaders.append("Content-Type", "application/json");
+
+        let requestOptions = {
+          method: "POST",
+          headers: myHeaders,
+          body: JSON.stringify({
+            text_prompts: [
+              {
+                text: val,
+                weight: 0.5,
+              },
+            ],
+          }),
+          redirect: "follow",
+        };
+
+        fetch(
+          "https://api.stability.ai/v1/generation/stable-diffusion-v1-5/text-to-image",
+          requestOptions
+        )
+          .then((response) => response.json())
+          .then((result) => {
+            $("#image-generated").attr(
+              "src",
+              `data:image/png;base64,${result["artifacts"][0]["base64"]}`
             );
-            myHeaders.append("Content-Type", "multipart/form-data");
-
-            const formData = new FormData();
-            formData.append("init_image", blob);
-            formData.append("init_image_mode", "IMAGE_STRENGTH");
-            formData.append("image_strength", 0.35);
-            formData.append(
-              "text_prompts[0][text]",
-              "Galactic dog wearing a cape"
-            );
-            formData.append("cfg_scale", 7);
-            formData.append("clip_guidance_preset", "FAST_BLUE");
-            formData.append("samples", 1);
-            formData.append("steps", 30);
-
-            var requestOptions = {
-              method: "POST",
-              headers: myHeaders,
-              body: formData,
-              redirect: "follow",
-            };
-
-            fetch(
-              "https://api.stability.ai/v1/generation/stable-diffusion-v1-5/image-to-image",
-              requestOptions
-            )
-              .then((response) => response.text())
-              .then((result) => console.log(result))
-              .catch((error) => console.log("error", error));
-          });
+          })
+          .catch((error) => console.log("error", error));
       });
     </script>
   </body>
